@@ -1,0 +1,15 @@
+# 1. 레포지토리 전체의 기본 오너 설정
+* @SH-HWA
+
+# 2. 특정 확장자 파일들의 오너 설정 (.js 파일들)
+# *.js    @js-expert-username
+
+# 3. 특정 폴더 안의 모든 파일 오너 설정 (docs 폴더 전체)
+# /docs/  @docs-writer-username
+
+# 4. 특정 폴더 및 하위 폴더의 파일 오너 설정
+# (apps 폴더 및 그 하위의 모든 자바스크립트 파일)
+# /apps/**/*.js @frontend-team-name
+
+# 5. 여러 명 또는 팀을 동시에 지정하기 (이메일로도 지정 가능)
+# /build/logs/ @owner-1 @owner-2 engineering@example.com
