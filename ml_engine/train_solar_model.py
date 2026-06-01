@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import pandas as pd
 import joblib
@@ -8,7 +9,8 @@ from scipy.interpolate import interp1d
 # ==========================================
 # 1. 3개년 방위각 원본 CSV 데이터 로드
 # ==========================================
-csv_filename = "solar_azimuth_3years.csv"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+csv_filename = os.path.join(BASE_DIR, "solar_azimuth_3years.csv")
 try:
     df_raw = pd.read_csv(csv_filename)
     print(f"📊 원본 CSV 로드 완료! (총 {len(df_raw)}일 치 수평 데이터)")
@@ -88,7 +90,7 @@ print(f"✅ 모델 훈련 완료! (소요 시간: {end_time - start_time})")
 # 5. 완성된 모델을 .pkl 파일로 내보내기 (저장)
 # ==========================================
 model_filename = "solar_model.pkl"
-joblib.dump(model, model_filename)
+joblib.dump(model, os.path.join(BASE_DIR, model_filename))
 
 print(f"\n==================================================")
 print(f"🎉 1축 수평 추적을 위한 뇌 파일 배포 준비 완료!")
