@@ -87,7 +87,7 @@ for idx, target_date in enumerate(date_list):
                     "연도": int(target_date[:4]),
                     "월": int(target_date[4:6]),
                     "일": int(target_date[6:]),
-                    # 고도는 과감히 생략하고 수평 서보모터 제어용 방위각만 정제하여 적재
+                    # 고도는 생략하고 수평 서보모터 제어용 방위각만 정제하여 적재
                     "방위각_09시": parse_azimuth_value(item.get("azimuth_09")),
                     "방위각_12시": parse_azimuth_value(item.get("azimuth_12")),
                     "방위각_15시": parse_azimuth_value(item.get("azimuth_15")),
@@ -118,9 +118,9 @@ if all_days_data:
     df.to_csv(filename, index=False, encoding="utf-8-sig")
 
     print(f"\n==================================================")
-    print(f"🎉 1축 추적용 3개년 방위각 데이터셋 빌드 성공!")
-    print(f"📁 파일 저장 위치: {filename}")
-    print(f"📊 총 저장 데이터 행 수: {len(df)}행")
+    print(f"1축 추적용 3개년 방위각 데이터셋 빌드 성공!")
+    print(f"파일 저장 위치: {filename}")
+    print(f"총 저장 데이터 행 수: {len(df)}행")
     print(f"==================================================")
 else:
-    print("\n🚨 데이터 적재에 실패했습니다. 수집된 내용이 비어있습니다.")
+    print("\n데이터 적재에 실패했습니다. 수집된 내용이 비어있습니다.")
