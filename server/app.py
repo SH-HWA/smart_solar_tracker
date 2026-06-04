@@ -2,11 +2,11 @@
 # Flask REST API — DB 센서 데이터 제공 및 STM32 실시간 수집 (중복 수집 방지 필터 내장)
 
 from datetime import datetime
-import os  # 📌 파일 시스템의 실제 경로를 추적하기 위해 임포트
+import os
 import threading
 import time
 from flask import Flask, jsonify, render_template_string, request
-import db  # SQLite 제어를 담당하는 db.py 모듈을 가져옵니다.
+import db
 import joblib
 import serial
 
@@ -34,7 +34,7 @@ except FileNotFoundError:
     solar_model = None  # 에러로 인한 서버 전체 크래시 방지
 
 
-# ── 📌 [코드 추가] 모델을 통한 추론 후 5도 단위 변환 및 STM32 제어 송신 스레드 ──────────
+# ── 모델을 통한 추론 후 5도 단위 변환 및 STM32 제어 송신 스레드 ──────────
 def predict_and_send_stm32():
     """
     1분 주기로 현재 시간의 태양 방위각을 예측하고,
