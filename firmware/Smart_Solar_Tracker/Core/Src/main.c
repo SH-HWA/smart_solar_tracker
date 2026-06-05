@@ -186,7 +186,7 @@ int main(void)
       HAL_MAX_DELAY
   );
 
-  /* 📌 [USER CODE BEGIN 2 추가] 최초 1회 UART 인터럽트 수신 엔진 시동 */
+  /* 최초 1회 UART 인터럽트 수신 엔진 시동 */
   HAL_UART_Receive_IT(&huart2, &rx_data, 1);
   /* USER CODE END 2 */
 
