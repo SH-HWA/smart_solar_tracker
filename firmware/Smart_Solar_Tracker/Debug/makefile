@@ -1,6 +1,6 @@
 ################################################################################
 # Automatically-generated file. Do not edit!
-# Toolchain: GNU Tools for STM32 (13.3.rel1)
+# Toolchain: GNU Tools for STM32 (14.3.rel1)
 ################################################################################
 
 -include ../makefile.init
@@ -60,8 +60,8 @@ all: main-build
 main-build: Smart_Solar_Tracker.elf secondary-outputs
 
 # Tool invocations
-Smart_Solar_Tracker.elf Smart_Solar_Tracker.map: $(OBJS) $(USER_OBJS) C:\kimyonghee_CarSensor\stm32\stm32_work\Smart_Solar_Tracker\STM32F446RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "Smart_Solar_Tracker.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\kimyonghee_CarSensor\stm32\stm32_work\Smart_Solar_Tracker\STM32F446RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Smart_Solar_Tracker.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
+Smart_Solar_Tracker.elf Smart_Solar_Tracker.map: $(OBJS) $(USER_OBJS) C:\Users\raidi\Documents\study\2026_carSensor\final_project\project01\smart_solar_tracker\firmware\Smart_Solar_Tracker\STM32F446RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "Smart_Solar_Tracker.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\raidi\Documents\study\2026_carSensor\final_project\project01\smart_solar_tracker\firmware\Smart_Solar_Tracker\STM32F446RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="Smart_Solar_Tracker.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -u _printf_float -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
