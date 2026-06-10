@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>태양광 추적 시스템 대시보드</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen">
+
+    <div class="container mx-auto px-4 py-8">
+        <header class="mb-8 border-b border-slate-700 pb-4 flex justify-between items-center">
+            <div>
+                <h1 class="text-3xl font-bold text-amber-400">☀️ Solar Tracking System</h1>
+                <p class="text-slate-400 text-sm mt-1">STM32 NUCLEO IoT 실시간 모니터링 제어반</p>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="relative flex h-3 w-3">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                </span>
+                <span id="connection-status" class="text-emerald-400 text-sm font-semibold">실시간 연결됨</span>
+            </div>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl">
+                <div class="text-sm font-medium text-slate-400 uppercase">현재 태양광 조도</div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span id="widget-lux" class="text-5xl font-extrabold text-amber-400 tracking-tight">0.0</span>
+                    <span class="text-slate-400 font-semibold">Lux</span>
+                </div>
+                <div class="mt-4 text-xs text-slate-500" id="widget-lux-time">최근 갱신: -</div>
+            </div>
+
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl">
+                <div class="text-sm font-medium text-slate-400 uppercase">서보모터 추적 각도</div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span id="widget-angle" class="text-5xl font-extrabold text-cyan-400 tracking-tight">0.0</span>
+                    <span class="text-slate-400 font-semibold">° (Degree)</span>
+                </div>
+                <div class="mt-4 w-full bg-slate-700 rounded-full h-2">
+                    <div id="angle-progress" class="bg-cyan-400 h-2 rounded-full transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl flex flex-col justify-between">
+                <div>
+                    <div class="text-sm font-medium text-slate-400 uppercase">데이터베이스 수집 현황</div>
+                    <div class="mt-2 text-sm text-slate-300">
+                        • 누적 적재 건수: <span id="stat-total" class="font-bold text-white">0</span>건
+                    </div>
+                    <div class="text-sm text-slate-300 mt-1">
+                        • 오늘 최고 조도: <span id="stat-max-lux" class="font-bold text-emerald-400">0.0</span> Lux
+                    </div>
+                </div>
+                <button onclick="fetchStats()" class="mt-4 w-full bg-slate-700 hover:bg-slate-650 text-white font-medium py-1.5 px-4 rounded-xl text-xs transition">
+                    통계 새로고침
+                </button>
+            </div>
+        </div>
+
+        <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-xl">
+            <h2 class="text-lg font-bold text-slate-200 mb-4">📈 실시간 변화 추이 차트 (최근 20건 트렌드)</h2>
+            <div class="relative w-full h-[350px]">
+                <canvas id="realtimeChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Chart.js 초기 설정
+        const ctx = document.getElementById('realtimeChart').getContext('2d');
+        const realtimeChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [], // 타임스탬프 배열
+                datasets: [
+                    {
+                        label: '조도 수치 (Lux)',
+                        data: [],
+                        borderColor: '#fbbf24', // Amber 400
+                        backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                        borderWidth: 3,
+                        yAxisID: 'y-lux',
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: '모터 각도 (°)',
+                        data: [],
+                        borderColor: '#22d3ee', // Cyan 400
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        yAxisID: 'y-angle',
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        grid: { color: '#334155' },
+                        ticks: { color: '#94a3b8' }
+                    },
+                    'y-lux': {
+                        type: 'linear',
+                        position: 'left',
+                        grid: { color: '#334155' },
+                        ticks: { color: '#fbbf24' },
+                        title: { display: true, text: 'Lux', color: '#fbbf24' }
+                    },
+                    'y-angle': {
+                        type: 'linear',
+                        position: 'right',
+                        min: 0,
+                        max: 170, // 하드웨어 규격 제한 반영
+                        grid: { drawOnChartArea: false },
+                        ticks: { color: '#22d3ee' },
+                        title: { display: true, text: 'Degree (°)', color: '#22d3ee' }
+                    }
+                },
+                plugins: {
+                    legend: { labels: { color: '#f1f5f9' } }
+                }
+            }
+        });
+
+        // 2. 백엔드 REST API 데이터 동기화 함수
+        async function updateDashboard() {
+            try {
+                // 2-1. 가장 최근 1건 데이터 패치 (/api/latest)
+                const resLatest = await fetch('/api/latest');
+                if (resLatest.ok) {
+                    const latest = await resLatest.json();
+                    
+                    // 위젯 텍스트 업데이트
+                    document.getElementById('widget-lux').innerText = latest.lux.toFixed(1);
+                    document.getElementById('widget-angle').innerText = latest.predicted_angle.toFixed(1);
+                    document.getElementById('widget-lux-time').innerText = `최근 갱신: ${latest.timestamp}`;
+                    
+                    // 각도 바 애니메이션 비율 조정 (0~170도를 100% 비율로 변환)
+                    const anglePercentage = (latest.predicted_angle / 170) * 100;
+                    document.getElementById('angle-progress').style.width = `${anglePercentage}%`;
+                    
+                    document.getElementById('connection-status').innerText = "실시간 연결됨";
+                    document.getElementById('connection-status').className = "text-emerald-400 text-sm font-semibold";
+                }
+
+                // 2-2. 최근 20건 차트 데이터 패치 (/api/data?limit=20)
+                const resChart = await fetch('/api/data?limit=20');
+                if (resChart.ok) {
+                    const chartDataJson = await resChart.json();
+                    // 최신 데이터가 먼저 오므로, 차트 표현을 위해 시간 순서 역순 정렬(과거->현재)
+                    const rows = chartDataJson.data.reverse();
+
+                    // 데이터 분리 추출
+                    const labels = rows.map(r => r.timestamp.split(" ")[1] || r.timestamp); // 시:분:초만 추출
+                    const luxData = rows.map(r => r.lux);
+                    const angleData = rows.map(r => r.predicted_angle);
+
+                    // 차트에 데이터 주입 및 리렌더링
+                    realtimeChart.data.labels = labels;
+                    realtimeChart.data.datasets[0].data = luxData;
+                    realtimeChart.data.datasets[1].data = angleData;
+                    realtimeChart.update();
+                }
+
+            } catch (error) {
+                console.error("데이터 수집 오류:", error);
+                document.getElementById('connection-status').innerText = "연결 끊김 (재시도 중)";
+                document.getElementById('connection-status').className = "text-rose-400 text-sm font-semibold";
+            }
+        }
+
+        // 3. 전체 통계 수집 함수 (/api/stats)
+        async function fetchStats() {
+            try {
+                const res = await fetch('/api/stats');
+                if (res.ok) {
+                    const stats = await res.json();
+                    document.getElementById('stat-total').innerText = stats.total;
+                    document.getElementById('stat-max-lux').innerText = stats.max_lux.toFixed(1);
+                }
+            } catch (e) {
+                console.error("통계 산출 오류:", e);
+            }
+        }
+
+        // 4. 타이머 기동 루프 설정
+        updateDashboard();
+        fetchStats();
+        
+        // 2초마다 백엔드 서버와 동기화하여 대시보드 강제 갱신
+        setInterval(updateDashboard, 2000);
+        // 10초마다 전체 통계 데이터 동기화
+        setInterval(fetchStats, 10000);
+    </script>
+</body>
+</html>
